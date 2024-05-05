@@ -1,0 +1,177 @@
+<!doctype html>
+<html>
+<head>
+  <title>Example of the Authorization Code flow with Spotify</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+  <link rel="stylesheet" href="/css/index.css">
+</head>
+
+<body>
+<div class="container">
+  <div id="login">
+    <h1>This is an example of the Authorization Code flow</h1>
+    <a href="/login" class="btn btn-primary">Log in with Spotify</a>
+  </div>
+  <div id="loggedin">
+    <div id="user-profile">
+    </div>
+    <div id="oauth">
+    </div>
+    <button class="btn btn-default" id="obtain-new-token">Obtain new token using the refresh token</button>
+  </div>
+<br>
+  <div class="container" id="playlists-container">
+    <button class="btn btn-default" id="get-playlists">Show Playlists</button>
+    <div id="playlists">
+    </div>
+  </div>
+</div>
+
+<script id="user-profile-template" type="text/x-handlebars-template">
+  <div class="container jumbotron">
+    <h1>Logged in as {{display_name}}</h1>
+  </div>
+  <div class="container-fluid">
+      <div class="media-body">
+        <div class="pull-left">
+          <img class="media-object" width="50" src="{{images.0.url}}" />
+        </div>
+        <dl class="dl-horizontal">
+          <dt>Display name</dt><dd class="clearfix">{{display_name}}</dd>
+          <dt>Id</dt><dd>{{id}}</dd>
+          <dt>Email</dt><dd>{{email}}</dd>
+          <dt>Spotify URI</dt><dd><a href="{{external_urls.spotify}}">{{external_urls.spotify}}</a></dd>
+          <dt>Link</dt><dd><a href="{{href}}">{{href}}</a></dd>
+          <dt>Profile Image</dt><dd class="clearfix"><a href="{{images.0.url}}">{{images.0.url}}</a></dd>
+          <dt>Country</dt><dd>{{country}}</dd>
+        </dl>
+  </div>
+  </div>
+</script>
+
+<script id="oauth-template" type="text/x-handlebars-template">
+  <h2>oAuth info</h2>
+  <dl class="dl-horizontal">
+    <dt>Access token</dt><dd class="text-overflow">{{access_token}}</dd>
+    <dt>Refresh token</dt><dd class="text-overflow">{{refresh_token}}</dd>
+  </dl>
+</script>
+
+<script id="playlists-template" type="text/x-handlebars-template">
+  <h2>Playlists</h2>
+  <ul class="list-group">
+    {{#each items}}
+      <li class="list-group-item">{{name}}</li>
+      <li class="list-group-item">{{tracks}}</li>
+    {{/each}}
+  </ul>
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.js"></script>
+<script src="https://code.jquery.com/jquery-1.10.1.min.js"></script>
+<script>
+  (function () {
+
+    /**
+     * Obtains parameters from the hash of the URL
+     * @return Object
+     */
+    function getHashParams() {
+      var hashParams = {};
+      var e, r = /([^&;=]+)=?([^&;]*)/g,
+        q = window.location.hash.substring(1);
+      while (e = r.exec(q)) {
+        hashParams[e[1]] = decodeURIComponent(e[2]);
+      }
+      return hashParams;
+    }
+
+    var userProfileSource = document.getElementById('user-profile-template').innerHTML,
+      userProfileTemplate = Handlebars.compile(userProfileSource),
+      userProfilePlaceholder = document.getElementById('user-profile');
+
+    var oauthSource = document.getElementById('oauth-template').innerHTML,
+      oauthTemplate = Handlebars.compile(oauthSource),
+      oauthPlaceholder = document.getElementById('oauth');
+
+    var playlistSource = document.getElementById('playlists-template').innerHTML,
+      playlistTemplate = Handlebars.compile(playlistSource),
+      playlistPlaceholder = document.getElementById('playlists');
+
+    var params = getHashParams();
+
+    var access_token = params.access_token,
+      refresh_token = params.refresh_token,
+      error = params.error;
+
+    if (error) {
+      alert('There was an error during the authentication');
+    } else {
+      if (access_token) {
+        // render oauth info
+        oauthPlaceholder.innerHTML = oauthTemplate({
+          access_token: access_token,
+          refresh_token: refresh_token
+        });
+
+        $.ajax({
+          url: 'https://api.spotify.com/v1/me',
+          headers: {
+            'Authorization': 'Bearer ' + access_token
+          },
+          success: function (response) {
+            userProfilePlaceholder.innerHTML = userProfileTemplate(response);
+
+            $('#login').hide();
+            $('#loggedin').show();
+          }
+        });
+      } else {
+        // render initial screen
+        $('#login').show();
+        $('#loggedin').hide();
+      }
+
+      document.getElementById('obtain-new-token').addEventListener('click', function () {
+        $.ajax({
+          type: 'GET',
+          url: '/refresh_token',
+          data: {
+            'refresh_token': refresh_token
+          }
+        }).done(function (data) {
+          access_token = data.access_token;
+          oauthPlaceholder.innerHTML = oauthTemplate({
+            access_token: access_token,
+            refresh_token: refresh_token
+          });
+        });
+      }, false);
+
+      document.getElementById('get-playlists').addEventListener('click', function () {
+        $.ajax({
+          url: 'https://api.spotify.com/v1/me/playlists',
+          data: {
+            'limit': 20,
+            'offset': 0,
+            'refresh_token': refresh_token,
+            'access_token': access_token
+          }
+        }).done(function (data) {
+          console.log(data);
+          playlistPlaceholder.innerHTML = playlistTemplate({
+            name: data.name,
+            tracks: data.tracks
+          });
+        });
+      }, false);
+    }
+  })();
+</script>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.3/dist/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+</body>
+</html>
