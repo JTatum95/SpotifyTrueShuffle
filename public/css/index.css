@@ -1,4 +1,4 @@
-#login, #loggedin {
+#login, #loggedin, #tab-table {
   display: none;
 }
 .text-overflow {
@@ -8,6 +8,6 @@
   width: 500px;
 }
 
-.container {
+.container, .button {
   padding-top: 1rem;
 }
