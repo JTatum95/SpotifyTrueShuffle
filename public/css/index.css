@@ -1,3 +1,9 @@
+@font-face {
+  font-family: "Clash Display";
+  src: url("public/fonts/ClashDisplay-Semibold.woff2") format("woff2"),
+  url("public/fonts/ClashDisplay-Semibold.woff") format("woff");
+}
+
 #login, #loggedin, #tab-table {
   display: none;
 }
@@ -8,6 +14,53 @@
   width: 500px;
 }
 
-.container, .button {
+.container {
   padding-top: 1rem;
+  font-family: "Lilita One", sans-serif;
+  font-weight: 400;
+  font-style: normal;
 }
+
+#main_container {
+  font-family: "Sunflower", serif;
+}
+
+.btn {
+  border-radius: 60px;
+  border: 2px solid #000000;
+}
+
+.shadow-button {
+  box-shadow: 6px 6px 0 0 #000000;
+  border-radius: 60px;
+  width: 15%;
+  height: 1.75em;
+  border: 2px solid #000000;
+  margin: 0 1em 0 1em;
+  color: #FFFFFF;
+  font-size: 2em;
+  font-family: "Lilita One", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  transition: box-shadow 0.25s ease-out 50ms
+}
+
+.shadow-button:hover {
+  box-shadow: 0 0 0 0 #000000;
+}
+
+.navbar-brand {
+  font-size: 3rem;
+  color: #FFFFFF;
+  font-family: "Clash Display", "Bungee Inline", "Helvetica Neue";
+}
+
+.navbar {
+  background-color: #BB855E;
+  height: 80px !important;
+}
+
+#about { background-color: #FFB140; }
+#contact { background-color: #935FA7; }
+#donate { background-color: #C95D3C; }
+#login_button { background-color: #1DB954; }

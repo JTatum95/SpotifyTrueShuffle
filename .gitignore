@@ -4,7 +4,7 @@
 node_modules
 dist
 .cache
-js/.env
+public/js/.env
 .DS_Store
 .editorconfig
 .gitattributes
