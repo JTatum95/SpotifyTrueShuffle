@@ -107,7 +107,7 @@
         <tbody>
         {{#each items}}
           <tr>
-            <td><img src="{{{this.images.[0].url}}}" width="60" height="60"></td>
+            <td><a href="{{{this.external_urls.spotify}}}"><img src="{{{this.images.[0].url}}}" width="60" height="60"></a></td>
             <td>{{this.name}}</td>
             <td>{{this.tracks.total}}</td>
             <td>{{@key}}</td>

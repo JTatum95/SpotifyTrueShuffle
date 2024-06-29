@@ -21,7 +21,7 @@
   font-style: normal;
 }
 
-#main_container {
+#main_container, .modal {
   font-family: "Sunflower", serif;
 }
 
